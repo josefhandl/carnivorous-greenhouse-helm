@@ -1,0 +1,21 @@
+{{- $root := . -}}
+{{- range $name, $svc := .Values.services }}
+{{- with $ -}}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "garden.fullname" $root }}-{{ $name }}
+  labels:
+    {{- include "garden.labels" $root | nindent 4 }}
+spec:
+  type: ClusterIP
+  ports:
+    - port: {{ $svc.port }}
+      targetPort: {{ $svc.containerPort }}
+      protocol: TCP
+      name: http
+  selector:
+    component: {{ $name }}
+{{- end }}
+---
+{{- end }}

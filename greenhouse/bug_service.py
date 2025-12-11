@@ -1,5 +1,6 @@
 # bug_service.py
 
+import os
 from flask import Flask, request, jsonify
 import random
 import requests
@@ -18,11 +19,16 @@ log.setLevel(logging.INFO)
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'bugsarebad1234'
 
+USER_SERVICE_URL       = os.environ.get("USER_SERVICE_URL",       'http://user_service:5001')
+PLANT_SERVICE_URL      = os.environ.get("PLANT_SERVICE_URL",      'http://plant_service:5002')
+SIMULATION_SERVICE_URL = os.environ.get("SIMULATION_SERVICE_URL", 'http://simulation_service:5003')
+WEBSOCKET_SERVICE_URL  = os.environ.get("WEBSOCKET_SERVICE_URL",  'http://websocket_service:5004')
+
 SERVICES = [
-    'http://user_service:5001',
-    'http://plant_service:5002',
-    'http://simulation_service:5003',
-    'http://websocket_service:5004'
+    USER_SERVICE_URL,
+    PLANT_SERVICE_URL,
+    SIMULATION_SERVICE_URL,
+    WEBSOCKET_SERVICE_URL
 ]
 
 bug_mode = False

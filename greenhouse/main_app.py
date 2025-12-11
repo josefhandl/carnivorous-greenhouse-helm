@@ -1,5 +1,6 @@
 # main_app.py
 
+import os
 from flask import Flask, render_template, session, redirect, url_for, request, jsonify
 import requests
 import logging
@@ -15,11 +16,11 @@ log.setLevel(logging.INFO)
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'plantsarecool1234'
 
-USER_SERVICE_URL = 'http://user_service:5001'
-PLANT_SERVICE_URL = 'http://plant_service:5002'
-SIMULATION_SERVICE_URL = 'http://simulation_service:5003'
-WEBSOCKET_SERVICE_URL = 'http://websocket_service:5004'
-BUG_SERVICE_URL = 'http://bug_service:5010'
+USER_SERVICE_URL       = os.environ.get("USER_SERVICE_URL",       'http://user_service:5001')
+PLANT_SERVICE_URL      = os.environ.get("PLANT_SERVICE_URL",      'http://plant_service:5002')
+SIMULATION_SERVICE_URL = os.environ.get("SIMULATION_SERVICE_URL", 'http://simulation_service:5003')
+WEBSOCKET_SERVICE_URL  = os.environ.get("WEBSOCKET_SERVICE_URL",  'http://websocket_service:5004')
+BUG_SERVICE_URL        = os.environ.get("BUG_SERVICE_URL",        'http://bug_service:5010')
 
 @app.route('/')
 def index():

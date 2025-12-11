@@ -1,0 +1,112 @@
+{{- $root := . -}}
+{{- range $name, $svc := .Values.services }}
+{{- with $ -}}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "garden.fullname" $root }}-{{ $name }}
+  labels:
+    {{- include "garden.labels" $root | nindent 4 }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      component: {{ $name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Chart.Name }}
+        component: {{ $name }}
+        instance: {{ .Release.Name }}
+    spec:
+
+      securityContext:
+        runAsNonRoot: true
+        seccompProfile:
+          type: RuntimeDefault
+
+{{- if or (eq $name "plant") (eq $name "user") }}
+      initContainers:
+
+      - name: init-db-wait
+        image: busybox
+        imagePullPolicy: Always
+
+        securityContext:
+          privileged: false
+          runAsUser: 1000
+          runAsGroup: 1000
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+{{- if eq .Values.postgres.mode "standalone" }}
+        command: ['sh', '-c', 'echo -e "Waiting for DB..."; while ! nc -z {{ include "garden.fullname" . }}-db 5432; do sleep 1; printf "-"; done; echo -e "  >> DB is ready.";']
+{{- else }}
+        command: ['sh', '-c', 'echo -e "Waiting for DB..."; while ! nc -z {{ include "garden.fullname" . }}-cnpg-rw 5432; do sleep 1; printf "-"; done; echo -e "  >> DB is ready.";']
+{{- end }}
+{{- end }}
+
+      containers:
+      - name: {{ $name }}
+        image: "{{ $root.Values.image.repository }}:{{ $root.Values.image.tag }}"
+        imagePullPolicy: {{ $root.Values.image.pullPolicy }}
+        command: {{ $svc.command | toJson }}
+        ports:
+        - containerPort: {{ $svc.containerPort }}
+        env:
+        # make DB credentials available to every service
+        - name: POSTGRES_USER
+          valueFrom:
+            secretKeyRef:
+{{- if eq .Values.postgres.mode "standalone" }}
+              name: {{ include "garden.fullname" $root }}-pg-secret
+{{- else }}
+              name: {{ include "garden.fullname" $root }}-cnpg-user-secret
+{{- end }}
+              key: username
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+{{- if eq .Values.postgres.mode "standalone" }}
+              name: {{ include "garden.fullname" $root }}-pg-secret
+{{- else }}
+              name: {{ include "garden.fullname" $root }}-cnpg-user-secret
+{{- end }}
+              key: password
+        - name: SQLALCHEMY_DATABASE_URI
+{{- if eq .Values.postgres.mode "standalone" }}
+          value: "postgresql://user:password@{{ include "garden.fullname" . }}-db:5432/{{ .Values.postgres.database }}"
+{{- else }}
+          value: "postgresql://user:password@{{ include "garden.fullname" . }}-cnpg-rw:5432/{{ .Values.postgres.database }}"
+{{- end }}
+        - name: USER_SERVICE_URL
+          value: "http://{{ include "garden.fullname" $root }}-user:5001"
+        - name: PLANT_SERVICE_URL
+          value: "http://{{ include "garden.fullname" $root }}-plant:5002"
+        - name: SIMULATION_SERVICE_URL
+          value: "http://{{ include "garden.fullname" $root }}-simulation:5003"
+        - name: WEBSOCKET_SERVICE_URL
+          value: "http://{{ include "garden.fullname" $root }}-websocket:5004"
+        - name: BUG_SERVICE_URL
+          value: "http://{{ include "garden.fullname" $root }}-bug:5010"
+
+        securityContext:
+          privileged: false
+          runAsUser: 1000
+          runAsGroup: 1000
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+
+        resources:
+          limits:
+            cpu: {{ .Values.servicesResources.maxcpu }}
+            memory: {{ .Values.servicesResources.maxram }}
+          requests:
+            cpu: {{ .Values.servicesResources.mincpu }}
+            memory: {{ .Values.servicesResources.minram }}
+{{- end }}
+---
+{{- end }}

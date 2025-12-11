@@ -1,0 +1,72 @@
+{{- if eq .Values.postgres.mode "standalone" }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "garden.fullname" . }}-db
+  labels:
+    {{- include "garden.labels" . | nindent 4 }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      component: db
+  template:
+    metadata:
+      labels:
+        app: {{ .Chart.Name }}
+        component: db
+        instance: {{ .Release.Name }}
+    spec:
+
+      securityContext:
+        fsGroup: 999
+        fsGroupChangePolicy: "OnRootMismatch"
+        runAsNonRoot: true
+        seccompProfile:
+          type: RuntimeDefault
+
+      containers:
+      - name: postgres
+        image: {{ .Values.postgres.image }}
+        imagePullPolicy: Always
+        env:
+        - name: POSTGRES_USER
+          valueFrom:
+            secretKeyRef:
+              name: {{ include "garden.fullname" . }}-pg-secret
+              key: POSTGRES_USER
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ include "garden.fullname" . }}-pg-secret
+              key: POSTGRES_PASSWORD
+        - name: PGOPTIONS
+          value: "-c log_statement=all -c log_connections=on -c log_disconnections=on"
+        ports:
+        - containerPort: 3306
+        volumeMounts:
+        - name: pgdata
+          mountPath: /var/lib/postgresql/data
+
+        securityContext:
+          privileged: false
+          runAsUser: 999
+          runAsGroup: 999
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+
+        resources:
+          limits:
+            cpu: {{ .Values.postgres.resources.maxcpu }}
+            memory: {{ .Values.postgres.resources.maxram }}
+          requests:
+            cpu: {{ .Values.postgres.resources.mincpu }}
+            memory: {{ .Values.postgres.resources.minram }}
+
+      volumes:
+        - name: pgdata
+          persistentVolumeClaim:
+            claimName: {{ include "garden.fullname" . }}-pg-pvc
+{{- end }}

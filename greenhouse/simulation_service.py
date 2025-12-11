@@ -1,5 +1,6 @@
 # simulation_service.py
 
+import os
 from flask import Flask, request
 from random import randint, uniform
 import logging
@@ -22,7 +23,7 @@ socketio = SocketIO(app, cors_allowed_origins="*", engineio_logger=True)
 
 BUGS = False
 
-PLANT_SERVICE_URL = 'http://plant_service:5002'
+PLANT_SERVICE_URL = os.environ.get("PLANT_SERVICE_URL", 'http://plant_service:5002')
 
 active_users = {}
 simulation_threads = {}

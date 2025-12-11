@@ -1,0 +1,43 @@
+{{- if eq .Values.postgres.mode "operator" }}
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: {{ include "garden.fullname" . }}-cnpg
+spec:
+#  template:
+#    metadata:
+#      labels:
+#        app: {{ .Chart.Name }}
+#        component: {{ include "garden.fullname" . }}-db
+#        instance: {{ .Release.Name }}
+
+  instances: 1
+  imageName: 'cerit.io/cloudnative-pg/postgresql:15.0'
+
+  primaryUpdateStrategy: unsupervised
+  enableSuperuserAccess: true
+  superuserSecret:
+    name: {{ include "garden.fullname" . }}-cnpg-superuser-secret
+
+  resources:
+    limits:
+      cpu: {{ .Values.postgres.resources.maxcpu }}
+      memory: {{ .Values.postgres.resources.maxram }}
+    requests:
+      cpu: {{ .Values.postgres.resources.mincpu }}
+      memory: {{ .Values.postgres.resources.minram }}
+
+  storage:
+    size: {{ .Values.postgres.storage }}
+    storageClass: zfs-csi
+
+  bootstrap:
+    initdb:
+      database: {{ .Values.postgres.database }}
+      owner: {{ .Values.postgres.username }}
+      secret:
+        name: {{ include "garden.fullname" . }}-cnpg-user-secret
+#      postInitApplicationSQL:
+#      - |
+#        GRANT {{ .Values.postgres.database }} TO {{ .Values.postgres.username }};
+{{- end }}

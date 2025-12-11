@@ -1,5 +1,6 @@
 # websocket_service.py
 
+import os
 from flask import Flask, request
 from flask_socketio import SocketIO, emit, join_room, leave_room
 import logging
@@ -17,7 +18,7 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = 'plantsarecool1234'
 socketio = SocketIO(app, cors_allowed_origins="*", engineio_logger=True)
 
-PLANT_SERVICE_URL = 'http://plant_service:5002'
+PLANT_SERVICE_URL = os.environ.get("PLANT_SERVICE_URL", 'http://plant_service:5002')
 
 active_users = {}
 BUGS = False

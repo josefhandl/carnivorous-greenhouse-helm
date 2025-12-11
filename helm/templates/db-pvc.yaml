@@ -1,0 +1,12 @@
+{{- if eq .Values.postgres.mode "standalone" }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "garden.fullname" . }}-pg-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: {{ .Values.postgres.storage }}
+{{- end }}

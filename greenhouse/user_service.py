@@ -1,5 +1,6 @@
 # user_service.py
 
+import os
 from flask import Flask, request, session, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -16,7 +17,7 @@ log.setLevel(logging.INFO)
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'plantsarecool1234'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://user:password@db:5432/user_service_db'
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('SQLALCHEMY_DATABASE_URI', 'postgresql://user:password@db:5432/user_service_db')
 db = SQLAlchemy(app)
 
 BUGS = False

@@ -1,5 +1,6 @@
 # plant_service.py
 
+import os
 from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
 import logging
@@ -14,10 +15,10 @@ log = logging.getLogger('werkzeug')
 log.setLevel(logging.INFO)
 
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://user:password@db:5432/plant_service_db'
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('SQLALCHEMY_DATABASE_URI', 'postgresql://user:password@db:5432/plant_service_db')
 db = SQLAlchemy(app)
 
-SIMULATION_SERVICE_URL = 'http://simulation_service:5003'
+SIMULATION_SERVICE_URL = os.environ.get("SIMULATION_SERVICE_URL", 'http://simulation_service:5003')
 BUGS = False
 
 class Plant(db.Model):

@@ -1,0 +1,60 @@
+# Global image configuration – all services use the same Dockerfile in the repo
+image:
+  repository: ""
+  pullPolicy: Always
+  tag: ""
+
+# ---- PostgreSQL ------------------------------------------------------------
+postgres:
+  # Mode "operator" or "standalone"
+  mode: operator
+  # Basics
+  username: user
+  password: password
+  database: garden
+  storage: 5Gi
+  # Resources
+  resources:
+    maxcpu: "200m"
+    maxram: "256Mi"
+    mincpu: "10m"
+    minram: "64Mi"
+
+  # Standalone mode
+  image: postgres:12
+
+  # Operator mode
+  superuserpassword: password
+
+# ---- Service‑specific configuration ----------------------------------------
+servicesResources:
+  maxcpu: "200m"
+  maxram: "256Mi"
+  mincpu: "10m"
+  minram: "64Mi"
+
+services:
+  user:
+    port: 5001
+    containerPort: 5001
+    command: ["python", "user_service.py"]
+  plant:
+    port: 5002
+    containerPort: 5002
+    command: ["python", "plant_service.py"]
+  simulation:
+    port: 5003
+    containerPort: 5003
+    command: ["python", "simulation_service.py"]
+  websocket:
+    port: 5004
+    containerPort: 5004
+    command: ["python", "websocket_service.py"]
+  bug:
+    port: 5010
+    containerPort: 5010
+    command: ["python", "bug_service.py"]
+  main:
+    port: 5005
+    containerPort: 5000
+    command: ["python", "main_app.py"]

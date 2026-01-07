@@ -1,8 +1,8 @@
 # Global image configuration – all services use the same Dockerfile in the repo
 image:
-  repository: ""
+  repository: "ghcr.io/carnivorous-greenhouse"
   pullPolicy: Always
-  tag: ""
+  tag: "main"
 
 # ---- PostgreSQL ------------------------------------------------------------
 postgres:

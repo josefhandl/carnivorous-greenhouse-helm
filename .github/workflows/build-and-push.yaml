@@ -2,7 +2,7 @@ name: Docker
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: carnivorous-greenhouse
+  IMAGE_NAME: ${{ github.repository }}
 
 on:
   push:

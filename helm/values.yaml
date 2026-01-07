@@ -1,6 +1,6 @@
 # Global image configuration – all services use the same Dockerfile in the repo
 image:
-  repository: "ghcr.io/carnivorous-greenhouse"
+  repository: "ghcr.io/carnivorous-greenhouse-helm"
   pullPolicy: Always
   tag: "main"
 

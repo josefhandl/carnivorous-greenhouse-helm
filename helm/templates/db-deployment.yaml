@@ -34,12 +34,12 @@ spec:
           valueFrom:
             secretKeyRef:
               name: {{ include "garden.fullname" . }}-pg-secret
-              key: POSTGRES_USER
+              key: username
         - name: POSTGRES_PASSWORD
           valueFrom:
             secretKeyRef:
               name: {{ include "garden.fullname" . }}-pg-secret
-              key: POSTGRES_PASSWORD
+              key: password
         - name: PGOPTIONS
           value: "-c log_statement=all -c log_connections=on -c log_disconnections=on"
         ports:
